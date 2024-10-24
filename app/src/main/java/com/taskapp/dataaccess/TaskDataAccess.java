@@ -1,7 +1,9 @@
 package com.taskapp.dataaccess;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +18,7 @@ public class TaskDataAccess {
     private final UserDataAccess userDataAccess;
 
     public TaskDataAccess() {
-        filePath = "app/src/main/resources/tasks.csv";
+        filePath = "C:\\Users\\user\\Documents\\アセスメント\\chapter5assessment-aharen-keito\\app\\src\\main\\resources\\tasks.csv";
         userDataAccess = new UserDataAccess();
     }
 
@@ -39,7 +41,6 @@ public class TaskDataAccess {
     public List<Task> findAll() {
 
         List<Task> tasks = new ArrayList<>();
-        User loginUser;
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
@@ -53,7 +54,8 @@ public class TaskDataAccess {
                 int code = Integer.parseInt(value[0]);
                 String name = value[1];
                 int status = Integer.parseInt(value[2]);
-                User repUser = userDataAccess.findByCode(code);
+                int a = Integer.parseInt(value[3]);
+                User repUser = userDataAccess.findByCode(a);
 
                 Task task = new Task(code, name, status, repUser);
                 tasks.add(task);
@@ -68,39 +70,69 @@ public class TaskDataAccess {
      * タスクをCSVに保存します。
      * @param task 保存するタスク
      */
-    // public void save(Task task) {
-    //     try () {
-
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
+    public void save(Task task) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath,true))) {
+            String line = createLine(task);
+            writer.newLine();
+            writer.write(line);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * コードを基にタスクデータを1件取得します。
      * @param code 取得するタスクのコード
      * @return 取得したタスク
      */
-    // public Task findByCode(int code) {
-    //     try () {
+    public Task findByCode(int code) {
+        Task task = null;
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] value = line.split(",");
+                int taskCode = Integer.parseInt(value[0]);
+                if(code != taskCode){
+                    continue;
+                }
+                String name = value[1];
+                int status = Integer.parseInt(value[2]);
+                int a = Integer.parseInt(value[3]);
+                User repUser = userDataAccess.findByCode(a);
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return null;
-    // }
+                task = new Task(taskCode, name, status, repUser);
+                break;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return task;
+    }
 
     /**
      * タスクデータを更新します。
      * @param updateTask 更新するタスク
      */
-    // public void update(Task updateTask) {
-    //     try () {
-
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
+    public void update(Task updateTask) {
+        List<Task> tasks = findAll();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            writer.write("Code,Name,Status,Rep_User_Code\n");
+            String line;
+            for(Task task : tasks){
+                if (task.getCode() == updateTask.getCode()) {
+                    line = createLine(updateTask);
+                } else {
+                    line = createLine(task);
+                }
+                writer.write(line);
+                writer.newLine();
+            }
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * コードを基にタスクデータを削除します。
@@ -119,6 +151,17 @@ public class TaskDataAccess {
      * @param task フォーマットを作成するタスク
      * @return CSVに書き込むためのフォーマット文字列
      */
-    // private String createLine(Task task) {
-    // }
+    //int code, String name, int status, User repUser
+    private String createLine(Task task) {
+        String repUserCode;
+
+    // Userがnullの場合の処理
+    if (task.getRepUser() != null) {
+        repUserCode = String.valueOf(task.getRepUser().getCode());
+    } else {
+        repUserCode = ""; 
+    }
+        return task.getCode() + "," + task.getName() + "," + task.getStatus()
+                + "," +repUserCode;
+    }
 }
