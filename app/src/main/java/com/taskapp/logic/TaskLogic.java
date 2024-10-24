@@ -55,7 +55,7 @@ public class TaskLogic {
                 String a = "あなたが担当しています";
                 System.out.print(a);
             } else  {
-                System.out.println(userDataAccess.findByCode(user.getCode()) + "担当しています");
+                System.out.println(loginUser.getName() + "担当しています");
                 // User user = task.getRepUser();
                 // if (user != null) {
                 //     System.out.print(user.getName() + "が担当しています");
