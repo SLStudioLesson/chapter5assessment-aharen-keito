@@ -1,5 +1,14 @@
 package com.taskapp.dataaccess;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.taskapp.model.Task;
+import com.taskapp.model.User;
+
 public class TaskDataAccess {
 
     private final String filePath;
@@ -27,14 +36,33 @@ public class TaskDataAccess {
      * @see com.taskapp.dataaccess.UserDataAccess#findByCode(int)
      * @return タスクのリスト
      */
-    // public List<Task> findAll() {
-    //     try () {
+    public List<Task> findAll() {
 
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return null;
-    // }
+        List<Task> tasks = new ArrayList<>();
+        User loginUser;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
+            br.readLine();
+            while ((line = br.readLine()) != null) {
+                String[] value = line.split(",");
+                if(value.length != 4){
+                    continue;
+                }
+                //int code, String name, int status, User repUser
+                int code = Integer.parseInt(value[0]);
+                String name = value[1];
+                int status = Integer.parseInt(value[2]);
+                User repUser = userDataAccess.findByCode(code);
+
+                Task task = new Task(code, name, status, repUser);
+                tasks.add(task);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tasks;
+    }
 
     /**
      * タスクをCSVに保存します。

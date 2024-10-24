@@ -1,14 +1,17 @@
 package com.taskapp.ui;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import com.taskapp.exception.AppException;
 import com.taskapp.logic.TaskLogic;
 import com.taskapp.logic.UserLogic;
 import com.taskapp.model.User;
 
 public class TaskUI {
+
     private final BufferedReader reader;
 
     private final UserLogic userLogic;
@@ -25,6 +28,7 @@ public class TaskUI {
 
     /**
      * 自動採点用に必要なコンストラクタのため、皆さんはこのコンストラクタを利用・削除はしないでください
+     * 
      * @param reader
      * @param userLogic
      * @param taskLogic
@@ -46,6 +50,8 @@ public class TaskUI {
     public void displayMenu() {
         System.out.println("タスク管理アプリケーションにようこそ!!");
 
+        inputLogin(); // ログイン判定
+
         // メインメニュー
         boolean flg = true;
         while (flg) {
@@ -59,6 +65,7 @@ public class TaskUI {
 
                 switch (selectMenu) {
                     case "1":
+                    taskLogic.showAll(loginUser);
                         break;
                     case "2":
                         break;
@@ -81,9 +88,32 @@ public class TaskUI {
      * ユーザーからのログイン情報を受け取り、ログイン処理を行います。
      *
      * @see com.taskapp.logic.UserLogic#login(String, String)
+     * 
+     *      タスク管理アプリケーションにようこそ!!
+     *      メールアドレスを入力してください：hogefuga@example.com
+     *      パスワードを入力してください：password1
+     *      既に登録されているメールアドレス、パスワードを入力してください
      */
-    // public void inputLogin() {
-    // }
+    public void inputLogin() {
+        boolean flg = true;
+        while (flg) {
+            try {
+                System.out.println("メールアドレスを入力してください：");
+                String email = reader.readLine();
+    
+                System.out.println("パスワードを入力してください：");
+                String password = reader.readLine();
+    
+                loginUser = userLogic.login(email, password);
+                flg = false;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (AppException e) { // 記述しないと Unhandled exception type AppException になる
+                System.out.println(e.getMessage());
+            }
+            
+        }
+    }
 
     /**
      * ユーザーからの新規タスク情報を受け取り、新規タスクを登録します。
@@ -129,6 +159,6 @@ public class TaskUI {
      * @return 数値であればtrue、そうでなければfalse
      */
     // public boolean isNumeric(String inputText) {
-    //     return false;
+    // return false;
     // }
 }
